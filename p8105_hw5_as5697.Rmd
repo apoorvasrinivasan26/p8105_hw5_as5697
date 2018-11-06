@@ -1,0 +1,39 @@
+---
+title: "P8105 Homework 5"
+author: "Apoorva Srinivasan"
+date: "11/.3/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+p1_data = list.files("./data", full.names = TRUE) 
+
+p1_df = map(p1_data, read_csv) 
+
+for (i in 1:20) {
+  if (i < 11) {
+    p1_df[[i]] = p1_df[[i]] %>% 
+    mutate(study_id = i, arm = "Control")
+  } else if (i > 10) {
+    p1_df[[i]] = p1_df[[i]] %>% 
+      mutate(study_id = i - 10, arm = "Experimental")
+  }
+}
+
+
+p1_tidy = p1_df %>%
+  bind_rows() %>%
+  gather(key = week, value = observation, week_1:week_8) %>%
+  separate(week, into = c("delete", "week"), sep = "_") %>%
+  select(study_id, arm, everything(), -(delete)) %>%
+  arrange(study_id, week)
+
+p1_tidy
+
+```
+
+
