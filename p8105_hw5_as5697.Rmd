@@ -30,10 +30,24 @@ p1_tidy = p1_df %>%
   gather(key = week, value = observation, week_1:week_8) %>%
   separate(week, into = c("delete", "week"), sep = "_") %>%
   select(study_id, arm, everything(), -(delete)) %>%
-  arrange(study_id, week)
+  arrange(study_id, week) %>%
+  mutate(week = as.integer(week), 
+         study_id = as.character(study_id))
 
 p1_tidy
 
+```
+Spaghetti plot
+
+```{r}
+p1_tidy %>%
+  group_by(arm, study_id) %>%
+  group_by(arm, study_id) %>% 
+  ggplot(aes(x = week, y = observation, color = arm, type = study_id)) + 
+    geom_line() +
+  labs(title = "Observations on each subject over time",
+       x = "Week", 
+       y = "Observation")
 ```
 
 
