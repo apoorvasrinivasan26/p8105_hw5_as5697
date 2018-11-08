@@ -41,7 +41,6 @@ Spaghetti plot
 
 ```{r}
 p1_tidy %>%
-  group_by(arm, study_id) %>%
   group_by(arm, study_id) %>% 
   ggplot(aes(x = week, y = observation, color = arm, type = study_id)) + 
     geom_line() +
@@ -49,5 +48,34 @@ p1_tidy %>%
        x = "Week", 
        y = "Observation")
 ```
+
+
+
+###PROBLEM 2
+
+
+```{r}
+homicide = read_csv("./homicide-data.csv")
+```
+
+```{r}
+homicide = homicide %>%
+   mutate(city_state = str_c(city, ", ", state),
+         disposition = as.factor(disposition))
+
+```
+
+```{r}
+n_per_city = homicide %>%
+  group_by(city_state) %>%
+  count()
+
+
+n_unsolved = homicide %>%
+  group_by(city_state) %>%
+  filter(disposition %in% c("Closed without arrest", "Open/No arrest")) %>%
+  count()
+```
+
 
 
