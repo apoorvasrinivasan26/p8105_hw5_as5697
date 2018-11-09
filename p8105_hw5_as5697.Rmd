@@ -5,9 +5,13 @@ date: "11/.3/2018"
 output: github_document
 ---
 
+
+##PROBLEM 1
 ```{r setup, include=FALSE}
 library(tidyverse)
 ```
+
+
 
 ```{r}
 p1_data = list.files("./data", full.names = TRUE) 
@@ -51,7 +55,7 @@ p1_tidy %>%
 
 
 
-###PROBLEM 2
+##PROBLEM 2
 
 
 ```{r}
@@ -66,16 +70,42 @@ homicide = homicide %>%
 ```
 
 ```{r}
-n_per_city = homicide %>%
+homicide_group = homicide %>%
   group_by(city_state) %>%
-  count()
-
-
-n_unsolved = homicide %>%
-  group_by(city_state) %>%
-  filter(disposition %in% c("Closed without arrest", "Open/No arrest")) %>%
-  count()
+  summarise(n_total = n(),
+  n_unsolved = sum(disposition %in% c("Closed without arrest", "Open/No arrest")))
+  
 ```
 
+```{r, message = FALSE}
+homicide_balt = homicide_group %>%
+  filter(city_state == "Baltimore, MD") 
+  prop.test(homicide_balt$n_unsolved, homicide_balt$n_total) %>%
+  broom::tidy() %>%
+    select(estimate, conf.low, conf.high) %>% 
+  knitr::kable()
+ 
+  homicide_balt
+```
+
+Developing a function and iterating
+```{r}
+prop_city = function(x, y){
+  
+  test = prop.test(x,y) %>% 
+    broom::tidy() %>% 
+  select(estimate, conf.low, conf.high)
+  
+  test
+  
+}
+
+prop_city<-map2(.x = homicide_group$n_unsolved, .y = homicide_group$n_total, ~prop_city(.x, .y)) %>% 
+  bind_rows() %>% 
+  mutate(city_state = homicide_group$city_state) %>% 
+  select(city_state, everything()) 
+
+prop_city
+```
 
 
