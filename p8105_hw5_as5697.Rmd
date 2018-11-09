@@ -1,7 +1,7 @@
 ---
 title: "P8105 Homework 5"
 author: "Apoorva Srinivasan"
-date: "11/.3/2018"
+date: "11/03/2018"
 output: github_document
 ---
 
@@ -12,8 +12,9 @@ library(tidyverse)
 ```
 
 
+_Importing data and separating the groups:_
 
-```{r, include = FALSE}
+```{r p1.1, include = FALSE}
 p1_data = list.files("./data", full.names = TRUE) 
 
 p1_df = map(p1_data, read_csv) 
@@ -30,8 +31,9 @@ for (i in 1:20) {
 
 ```
 
+_Tidying the data: the code chunk below tidies the given data and creates new columns arm and study id._
 
-```{r}
+```{r p1.2}
 p1_tidy = p1_df %>%
   bind_rows() %>%
   gather(key = week, value = observation, week_1:week_8) %>%
@@ -46,35 +48,42 @@ p1_tidy
 ```
 
 
-Spaghetti plot
+_Spaghetti plot of observations on each subject over time._ 
 
-```{r}
+```{r p1.3}
 p1_tidy %>%
   group_by(arm, study_id) %>% 
   ggplot(aes(x = week, y = observation, color = arm, type = study_id)) + 
     geom_line() +
   labs(title = "Observations on each subject over time",
        x = "Week", 
-       y = "Observation")
+       y = "Observation") +
+  theme_bw()
 ```
 
+__Comment:__ From the plot above, we notice that although the observations for both control and experimental group are similar for the first couple of weeks, observations in experimental groups increases over time while the other does not.
 
 
 ##PROBLEM 2
 
-
-```{r}
+_Inporting data_
+```{r 2.1}
 homicide = read_csv("./homicide-data.csv")
 ```
 
-```{r}
+We're given a data collected by The Washington Post on homicides in `r distinct(homicide, city) %>% nrow()` large US cities. This dataset contains `r nrow(homicide)` people with `r ncol(homicide)` variables including date, victim names, race, age, sex, location and dispostion. 
+
+```{r p2.2}
 homicide = homicide %>%
    mutate(city_state = str_c(city, ", ", state),
-         disposition = as.factor(disposition))
+         disposition = as.factor(disposition)) 
 
 ```
 
-```{r}
+
+_Summarizing within cities to obtain the total number of homicides and the number of unsolved homicides_
+
+```{r p2.3}
 homicide_group = homicide %>%
   group_by(city_state) %>%
   summarise(n_total = n(),
@@ -82,7 +91,9 @@ homicide_group = homicide %>%
   
 ```
 
-```{r, message = FALSE}
+_Estimate proportions and confidence intervals for Baltimore, MD_
+
+```{r, p2.4}
 homicide_balt = homicide_group %>%
   filter(city_state == "Baltimore, MD") 
   prop.test(homicide_balt$n_unsolved, homicide_balt$n_total) %>%
@@ -93,19 +104,18 @@ homicide_balt = homicide_group %>%
   homicide_balt
 ```
 
-Developing a function and iterating
-```{r}
+_Developing a function and iterating over all cities_
+
+```{r p2.5, message= FALSE}
 prop_city = function(x, y){
   
   prop.test(x,y) %>% 
     broom::tidy() %>% 
   select(estimate, conf.low, conf.high)
   
-  
-  
 }
 
-prop_city<-map2(.x = homicide_group$n_unsolved, .y = homicide_group$n_total, ~prop_city(.x, .y)) %>% 
+prop_city = map2(.x = homicide_group$n_unsolved, .y = homicide_group$n_total, ~prop_city(.x, .y)) %>% 
   bind_rows() %>% 
   mutate(city_state = homicide_group$city_state) %>% 
   select(city_state, everything()) 
@@ -114,10 +124,10 @@ prop_city
 ```
 
 
-Plot:
 
+_Plot that shows the estimates and CIs for each city_
 
-```{r}
+```{r p2.6}
 prop_city %>% 
   ggplot(aes(x = fct_reorder(city_state, estimate), y = estimate)) +
   geom_point() +
