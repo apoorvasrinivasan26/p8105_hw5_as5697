@@ -67,7 +67,7 @@ __Comment:__ From the plot above, we notice that although the observations for b
 ##PROBLEM 2
 
 _Inporting data_
-```{r 2.1}
+```{r 2.1, message= FALSE}
 homicide = read_csv("./homicide-data.csv")
 ```
 
@@ -110,7 +110,7 @@ _Developing a function and iterating over all cities_
 prop_city = function(x, y){
   
   prop.test(x,y) %>% 
-    broom::tidy() %>% 
+    broom::tidy() %>% ##using broom::tidy to convert into dataframe
   select(estimate, conf.low, conf.high)
   
 }
