@@ -13,7 +13,7 @@ library(tidyverse)
 
 
 
-```{r}
+```{r, include = FALSE}
 p1_data = list.files("./data", full.names = TRUE) 
 
 p1_df = map(p1_data, read_csv) 
@@ -28,7 +28,10 @@ for (i in 1:20) {
   }
 }
 
+```
 
+
+```{r}
 p1_tidy = p1_df %>%
   bind_rows() %>%
   gather(key = week, value = observation, week_1:week_8) %>%
@@ -41,6 +44,8 @@ p1_tidy = p1_df %>%
 p1_tidy
 
 ```
+
+
 Spaghetti plot
 
 ```{r}
@@ -92,11 +97,11 @@ Developing a function and iterating
 ```{r}
 prop_city = function(x, y){
   
-  test = prop.test(x,y) %>% 
+  prop.test(x,y) %>% 
     broom::tidy() %>% 
   select(estimate, conf.low, conf.high)
   
-  test
+  
   
 }
 
@@ -108,4 +113,19 @@ prop_city<-map2(.x = homicide_group$n_unsolved, .y = homicide_group$n_total, ~pr
 prop_city
 ```
 
+
+Plot:
+
+
+```{r}
+prop_city %>% 
+  ggplot(aes(x = fct_reorder(city_state, estimate), y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  theme(axis.text.x = element_text(angle = 80, hjust = 1))+
+  labs(
+    title = "Estimates and CIs for Each City",
+    x = "City, State",
+    y = "Estimates" )
+```
 
